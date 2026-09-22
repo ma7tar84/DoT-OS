@@ -72,10 +72,25 @@ DoT OS is a bootc image, so install it **into** a VM:
 1. Create the VM (VirtualBox / VMware / KVM) — 20 GB disk, 4 GB RAM.
 2. Install **Fedora Atomic (Silverblue)** from a stock Fedora ISO as a
    carrier system. (Bazzite's official GNOME ISO works too.)
-3. In the VM:
+3. In the VM — **rebase** the carrier to the DoT OS image. Either of these
+   works; pick one:
 
    ```bash
-   bootc switch ostree-unverified-registry:ghcr.io/ma7tar84/dot-os:latest
+   # Option A — rpm-ostree (recommended; canonical rebase)
+   rpm-ostree rebase ostree-unverified-registry:ghcr.io/ma7tar84/dot-os:latest
+
+   # Option B — bootc (uses the docker transport, so NO ostree- prefix)
+   bootc switch ghcr.io/ma7tar84/dot-os:latest
+   ```
+
+   ⚠️ Do **not** write `bootc switch ostree-unverified-registry:...` — `bootc`
+   uses the containers/image parser, which rejects `ostree-*` transports with
+   `invalid reference format`. The `ostree-*` transports are for `rpm-ostree`
+   only.
+
+   Then:
+
+   ```bash
    systemctl reboot
    ```
 
