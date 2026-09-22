@@ -6,19 +6,26 @@
 # GNOME Settings still win (dconf user values take precedence over
 # system overrides).
 #
-# All schemas below are non-relocatable and verified to exist at build time:
-#   org.gnome.desktop.interface           (gnome-control-center)
-#   org.gnome.desktop.wm.preferences      (gnome-control-center)
-#   org.gnome.shell.extensions.user-theme (User Themes extension, installed
-#                                          by the gnome-extensions module
-#                                          BEFORE this module runs)
+# All schemas below verified to exist at build time (gsettings-desktop-schemas
+# + the two extensions the gnome-extensions module installs BEFORE this module):
+#   org.gnome.desktop.interface           (non-relocatable)
+#   org.gnome.desktop.wm.preferences      (RELOCATABLE -> path=
+#                                          /org/gnome/desktop/wm/preferences/,
+#                                          so the [..:GNOME-Greeter] subpath
+#                                          override below is legal)
+#   org.gnome.shell.extensions.user-theme (User Themes extension)
 # =============================================================================
 
 [org.gnome.desktop.interface]
-# macOS look: WhiteSur GTK theme (light + dark variants), WhiteSur icons,
-# Inter typeface (closest free stand-in for Apple's San Francisco)
+# macOS look: WhiteSur GTK theme, WhiteSur icons, Inter typeface (closest free
+# stand-in for Apple's San Francisco).
+# NOTE: `gtk-theme-dark` is NOT a valid key in org.gnome.desktop.interface —
+# it does not exist and the strict schema check rejects it (exits on first bad
+# key). WhiteSur-Light ships BOTH the light and dark CSS inside one theme;
+# GNOME's `color-scheme` key selects the variant, so we point gtk-theme at
+# WhiteSur-Light once and set color-scheme (prefer-light = macOS Aqua default).
 gtk-theme='WhiteSur-Light'
-gtk-theme-dark='WhiteSur-Dark'
+color-scheme='prefer-light'
 icon-theme='WhiteSur'
 font-name='Inter'
 enable-animations=true
