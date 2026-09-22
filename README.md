@@ -49,11 +49,11 @@ existing Bazzite/Fedora Atomic system:
 
 ```bash
 # 1. rebase to the unsigned image to install signing keys/policies
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/https://github.com/ma7tar84/dot-os:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/ma7tar84/dot-os:latest
 systemctl reboot
 
 # 2. rebase to the signed image
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/https://github.com/ma7tar84/dot-os:latest
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/ma7tar84/dot-os:latest
 systemctl reboot
 ```
 
