@@ -1,0 +1,140 @@
+# =============================================================================
+# DoT OS — BlueBuild recipe
+# -----------------------------------------------------------------------------
+# Rebranded fork of Bazzite (GNOME) with a macOS Aqua/Cupertino-style desktop:
+#   * OS identity "DoT OS"  (os-release, GRUB/BLS bootloader, settings panels)
+#   * WhiteSur GTK theme (light + dark) + WhiteSur icon theme, system-wide
+#   * WhiteSur GNOME Shell (Aqua) theme via the User Themes extension
+#   * Dash to Dock pinned to the BOTTOM with intelligent hiding
+#   * Window controls (minimize/maximize/close) on the TOP-LEFT
+#
+# Upstream: ghcr.io/ublue-os/bazzite-gnome:stable  (auto-tracks new releases)
+# Publish:  ghcr.io/<your-github-username>/dot-os
+#
+# Module order is deliberate and must be preserved:
+#   fonts -> gnome-extensions -> containerfile (themes)
+#   -> files -> gschema-overrides (needs the extension schemas present)
+#   -> script (build.sh while /usr is writable)
+#   -> systemd (boot-time rebrand) -> os-release -> signing
+# =============================================================================
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+version: 1
+name: dot-os
+description: >-
+  DoT OS — a Fedora Atomic gaming desktop rebranded from Bazzite (GNOME) with a
+  macOS Aqua/Cupertino UI: WhiteSur GTK & icon themes, bottom-anchored Dash to
+  Dock with intelligent hiding, and top-left window controls. Tracks upstream
+  Bazzite automatically via BlueBuild.
+
+# ---------------------------------------------------------------------------
+# Upstream base. `stable` always tracks the newest stable Bazzite GNOME build,
+# so every BlueBuild rebuild pulls upstream updates and re-applies our layers.
+# Pin a Fedora release tag (e.g. `44`) here instead to hold the base version.
+# ---------------------------------------------------------------------------
+base-image: ghcr.io/ublue-os/bazzite-gnome
+image-version: stable
+
+# Multi-arch builds use emulation and are much slower — enable only if needed:
+# platforms:
+#   - linux/amd64
+#   - linux/arm64
+
+labels:
+  org.dotos.name: "DoT OS"
+  org.dotos.based-on: ghcr.io/ublue-os/bazzite-gnome
+  org.dotos.upstream: https://bazzite.gg
+  org.dotos.flavor: gnome-macos
+
+modules:
+  # ---------------------------------------------------------------------------
+  # 1. Fonts — Inter: the closest free stand-in for Apple's San Francisco.
+  # ---------------------------------------------------------------------------
+  - type: fonts
+    fonts:
+      google-fonts:
+        - Inter
+
+  # ---------------------------------------------------------------------------
+  # 2. GNOME extensions — installed system-wide (enabled for all users, zero
+  #    per-user setup). The module downloads each from extensions.gnome.org
+  #    AND installs its gsettings schema, so it must run BEFORE the
+  #    gschema-overrides module below.
+  #      * Dash to Dock  -> the macOS-style bottom dock
+  #      * User Themes   -> lets the shell load the WhiteSur Aqua theme
+  # ---------------------------------------------------------------------------
+  - type: gnome-extensions
+    install:
+      - Dash to Dock
+      - User Themes
+
+  # ---------------------------------------------------------------------------
+  # 3. macOS (Aqua / Cupertino) theme layer — see containerfiles/dot-os/.
+  # ---------------------------------------------------------------------------
+  - type: containerfile
+    containerfiles:
+      - dot-os
+
+  # ---------------------------------------------------------------------------
+  # 4. Static files copied onto the image root at build time:
+  #      files/system/*  -> /            (systemd units, etc.)
+  #      files/scripts/build.sh -> /usr/local/bin/build.sh (boot-time service)
+  # ---------------------------------------------------------------------------
+  - type: files
+    files:
+      - source: system
+        destination: /
+      - source: scripts/build.sh
+        destination: /usr/local/bin/build.sh
+
+  # ---------------------------------------------------------------------------
+  # 5. System-wide gsettings *defaults* (themes, dock, window controls).
+  #    Runs AFTER gnome-extensions so the dash-to-dock + user-theme schemas
+  #    exist when glib compiles the overrides.
+  # ---------------------------------------------------------------------------
+  - type: gschema-overrides
+    include:
+      - zz1-dot-os-core.gschema.override
+      - zz2-dot-os-dock.gschema.override
+
+  # ---------------------------------------------------------------------------
+  # 6. Run the build/post-install script while /usr is writable (image build):
+  #    rebrands os-release, rebrands any BLS titles present, sets the system
+  #    dconf profile. Best-effort; will never fail the build.
+  # ---------------------------------------------------------------------------
+  - type: script
+    scripts:
+      - build.sh
+
+  # ---------------------------------------------------------------------------
+  # 7. systemd —
+  #      * system: re-run branding at boot so GRUB titles stay "DoT OS" after
+  #        kernel updates / rebases that regenerate the BLS files.
+  #      * user:   link the system WhiteSur shell theme into ~/.themes so the
+  #        User Themes extension can load it (no manual step).
+  # ---------------------------------------------------------------------------
+  - type: systemd
+    system:
+      enabled:
+        - dot-os-brand.service
+    user:
+      enabled:
+        - dot-os-shell-theme.service
+
+  # ---------------------------------------------------------------------------
+  # 8. OS identity — /etc/os-release identifies as "DoT OS". Near the end on
+  #    purpose: earlier modules resolve against the upstream ID. ID_LIKE stays
+  #    `fedora` so COPR/ostree tooling keeps working.
+  # ---------------------------------------------------------------------------
+  - type: os-release
+    properties:
+      ID: dot
+      ID_LIKE: fedora
+      NAME: DoT OS
+      PRETTY_NAME: DoT OS
+
+  # ---------------------------------------------------------------------------
+  # 9. Signing — cosign policy files so users can rebase via
+  #      ostree-image-signed:docker://ghcr.io/<you>/dot-os:latest
+  # ---------------------------------------------------------------------------
+  - type: signing

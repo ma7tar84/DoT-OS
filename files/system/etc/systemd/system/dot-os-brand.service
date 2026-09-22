@@ -1,0 +1,28 @@
+# =============================================================================
+# dot-os-brand.service — keep DoT OS branding fresh at every boot
+#
+# Runs /usr/local/bin/build.sh (copied by the `files` module) so the
+# GRUB (BootLoaderSpec) titles stay branded "DoT OS" even after a kernel
+# update, ostree rebase, or upstream rebase regenerates
+# /boot/loader/entries/*.conf.
+#
+# The script is safe when /usr is read-only: it skips the os-release edits in
+# that case (the BlueBuild `os-release` module owns the persistent identity)
+# and only rewrites the writable /boot BLS files + /etc dconf profile.
+# =============================================================================
+[Unit]
+Description=DoT OS — apply Bazzite -> DoT OS branding (os-release + GRUB entries)
+After=local-fs.target
+Before=graphical-session-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/build.sh
+RemainAfterExit=yes
+# Never block the boot on a branding hiccup.
+TimeoutStartSec=60
+TimeoutStopSec=5
+TimeoutSec=60
+
+[Install]
+WantedBy=multi-user.target

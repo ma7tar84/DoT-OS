@@ -1,0 +1,38 @@
+# =============================================================================
+# DoT OS — Dash to Dock (macOS Dock) configuration
+# System-wide defaults for the Dash to Dock GNOME extension
+# (org.gnome.shell.extensions.dash-to-dock, uuid
+# dash-to-dock@micxgx.gmail.com). Every key below was verified against the
+# extension's live schema from extensions.gnome.org.
+#
+# Result: a bottom-anchored Dock that intelligently hides behind
+# maximized windows and auto-shows on mouse-over — the macOS behavior.
+# =============================================================================
+
+[org.gnome.shell.extensions.dash-to-dock]
+# --- Placement: bottom of the screen ---------------------------------------
+dock-position='BOTTOM'
+# dock-fixed=false so the autohide/intellihide pair below can take effect
+# (a fixed dock would never hide).
+dock-fixed=false
+# --- Intelligent hiding ------------------------------------------------------
+# Hide the dock behind maximized windows; reveal it on mouse-over of the
+# screen edge (macOS Dock behavior).
+intellihide=true
+intellihide-mode='MAXIMIZED_WINDOWS'
+autohide=true
+# Hide the dock in fullscreen apps, like macOS does
+autohide-in-fullscreen=true
+# --- Appearance: large, rounded, macOS-sized icons ---------------------------
+dash-max-icon-size=56
+# Subtle running indicators (dots under running apps)
+running-indicator-style='DOTS'
+show-running=true
+show-favorites=true
+# --- Behavior: macOS click semantics -----------------------------------------
+# Click a running app -> show its window previews
+click-action='previews'
+# --- Content: apps + trash, no drive mounts (Finder-style) --------------------
+show-show-apps-button=true
+show-trash=true
+show-mounts=false

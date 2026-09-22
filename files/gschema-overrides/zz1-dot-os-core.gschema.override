@@ -1,0 +1,38 @@
+# =============================================================================
+# DoT OS — core macOS (Aqua / Cupertino) desktop defaults
+# Applied system-wide via gschema overrides (compiled into
+# /usr/share/glib-2.0/schemas/ at build time). These are *system defaults*:
+# every user gets the macOS layout out of the box, and changes made later in
+# GNOME Settings still win (dconf user values take precedence over
+# system overrides).
+#
+# All schemas below are non-relocatable and verified to exist at build time:
+#   org.gnome.desktop.interface           (gnome-control-center)
+#   org.gnome.desktop.wm.preferences      (gnome-control-center)
+#   org.gnome.shell.extensions.user-theme (User Themes extension, installed
+#                                          by the gnome-extensions module
+#                                          BEFORE this module runs)
+# =============================================================================
+
+[org.gnome.desktop.interface]
+# macOS look: WhiteSur GTK theme (light + dark variants), WhiteSur icons,
+# Inter typeface (closest free stand-in for Apple's San Francisco)
+gtk-theme='WhiteSur-Light'
+gtk-theme-dark='WhiteSur-Dark'
+icon-theme='WhiteSur'
+font-name='Inter'
+enable-animations=true
+
+[org.gnome.desktop.wm.preferences]
+# macOS-style window controls: minimize, maximize, close — TOP-LEFT corner
+button-layout='minimize,maximize,close:'
+
+[org.gnome.desktop.wm.preferences:GNOME-Greeter]
+button-layout='minimize,maximize,close:'
+
+[org.gnome.shell.extensions.user-theme]
+# WhiteSur GNOME Shell (Aqua) theme. The theme files live in
+# /usr/share/themes/WhiteSur-Light/gnome-shell/ and the User Themes extension
+# loads them from ~/.themes/ — the dot-os-shell-theme.service user unit
+# symlinks the system theme into ~/.themes automatically (no user action).
+name='WhiteSur-Light'

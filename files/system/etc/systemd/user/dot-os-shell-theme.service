@@ -1,0 +1,24 @@
+# =============================================================================
+# dot-os-shell-theme.service — per-user WhiteSur (Aqua) GNOME Shell theme
+#
+# The "User Themes" GNOME extension only loads shell themes from
+# ~/.themes/<name>/gnome-shell, so the system-wide theme in
+# /usr/share/themes/WhiteSur-Light must be linked into the user's
+# ~/.themes directory. This user unit does that automatically for every
+# logged-in user — no manual setup required.
+#
+# The gsettings default (org.gnome.shell.extensions.user-theme name=
+# 'WhiteSur-Light') is set system-wide by the gschema-overrides module.
+# =============================================================================
+[Unit]
+Description=DoT OS — link the system WhiteSur shell theme into ~/.themes
+
+[Service]
+Type=oneshot
+ExecStartPre=-/bin/mkdir -p ${HOME}/.themes
+# -n: don't fail if the link already exists (idempotent across reboots)
+ExecStart=/bin/sh -c 'ln -sfn /usr/share/themes/WhiteSur-Light "${HOME}/.themes/WhiteSur-Light"'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=gnome-session.target

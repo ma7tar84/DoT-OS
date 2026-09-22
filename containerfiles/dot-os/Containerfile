@@ -1,0 +1,63 @@
+# =============================================================================
+# DoT OS — macOS (Aqua / Cupertino) theme layer
+# -----------------------------------------------------------------------------
+# This Containerfile is spliced into the BlueBuild-generated build by the
+# `containerfile` module (see recipes/recipe.yml). Build context = repo root,
+# base = Bazzite-GNOME image, runs as root.
+#
+# Layers:
+#   1. WhiteSur GTK theme  (prebuilt Light + Dark) -> /usr/share/themes
+#      incl. the libadwaita-1 layout expected by GNOME 45+ (GTK4) apps
+#   2. WhiteSur icon theme (all color variants)    -> /usr/share/icons
+#   3. Icon cache rebuild + schema sanity check
+# =============================================================================
+
+# --- 1. WhiteSur GTK theme (system-wide) ------------------------------------
+# The prebuilt release archives contain:
+#   WhiteSur-Light/  (gtk-2.0, gtk-3.0, gtk-4.0, gnome-shell, metacity-1, ...)
+#   WhiteSur-Dark/   (same layout)
+# We install both, then generate the gtk-4.0/libadwaita-1/gtk.css layout that
+# GNOME 45+ libadwaita apps require (this mirrors `install.sh --libadwaita`).
+RUN set -euxo pipefail \
+    && curl -fLsS --retry 5 -o /tmp/WhiteSur-Light.tar.xz \
+         https://raw.githubusercontent.com/vinceliuice/WhiteSur-gtk-theme/master/release/WhiteSur-Light.tar.xz \
+    && curl -fLsS --retry 5 -o /tmp/WhiteSur-Dark.tar.xz \
+         https://raw.githubusercontent.com/vinceliuice/WhiteSur-gtk-theme/master/release/WhiteSur-Dark.tar.xz \
+    && tar -xf /tmp/WhiteSur-Light.tar.xz -C /usr/share/themes \
+    && tar -xf /tmp/WhiteSur-Dark.tar.xz  -C /usr/share/themes \
+    && for t in WhiteSur-Light WhiteSur-Dark; do \
+         mkdir -p "/usr/share/themes/${t}/gtk-4.0/libadwaita-1"; \
+         cp -f "/usr/share/themes/${t}/gtk-4.0/gtk.css" \
+               "/usr/share/themes/${t}/gtk-4.0/libadwaita-1/gtk.css"; \
+       done \
+    && rm -f /tmp/WhiteSur-Light.tar.xz /tmp/WhiteSur-Dark.tar.xz
+
+# --- 2. WhiteSur icon theme (system-wide) ------------------------------------
+# install.sh as root defaults DEST_DIR to /usr/share/icons; without -t it
+# installs the default (blue, Big Sur style) icon set as "WhiteSur".
+RUN set -euxo pipefail \
+    && git clone --depth 1 https://github.com/vinceliuice/WhiteSur-icon-theme.git /tmp/whitesur-icon \
+    && cd /tmp/whitesur-icon \
+    && ./install.sh \
+    && gtk-update-icon-cache -f /usr/share/icons \
+    && rm -rf /tmp/whitesur-icon
+
+# --- 3. GNOME Shell theme entrypoint ----------------------------------------
+# The WhiteSur shell CSS ships as gnome-shell/gnome-shell.css, but the shell
+# (and the User Themes extension) load gnome-shell/style.css.
+RUN set -euxo pipefail \
+    && ln -sf gnome-shell.css /usr/share/themes/WhiteSur-Light/gnome-shell/style.css \
+    && ln -sf gnome-shell.css /usr/share/themes/WhiteSur-Dark/gnome-shell/style.css
+
+# --- 4. Sanity check ----------------------------------------------------------
+# Ensure the theme + icon themes are discoverable before the gschema
+# overrides (which reference these exact names) are compiled.
+RUN set -euxo pipefail \
+    && test -d /usr/share/themes/WhiteSur-Light/gtk-3.0 \
+    && test -f /usr/share/themes/WhiteSur-Light/gtk-4.0/libadwaita-1/gtk.css \
+    && test -L /usr/share/themes/WhiteSur-Light/gnome-shell/style.css \
+    && test -d /usr/share/themes/WhiteSur-Dark/gtk-3.0 \
+    && test -f /usr/share/themes/WhiteSur-Dark/gtk-4.0/libadwaita-1/gtk.css \
+    && test -L /usr/share/themes/WhiteSur-Dark/gnome-shell/style.css \
+    && test -d /usr/share/icons/WhiteSur \
+    && glib-compile-schemas /usr/share/glib-2.0/schemas
