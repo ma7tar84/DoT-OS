@@ -1,0 +1,6 @@
+# CI / build logs
+_joblog.txt
+
+# Python
+__pycache__/
+*.pyc
