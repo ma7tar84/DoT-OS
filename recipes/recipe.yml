@@ -9,7 +9,7 @@
 #   * Window controls (minimize/maximize/close) on the TOP-LEFT
 #
 # Upstream: ghcr.io/ublue-os/bazzite-gnome:stable  (auto-tracks new releases)
-# Publish:  ghcr.io/<your-github-username>/dot-os
+# Publish:  ghcr.io/ma7tar84/dot-os  (repo github.com/ma7tar84/dot-os)
 #
 # Module order is deliberate and must be preserved:
 #   fonts -> gnome-extensions -> containerfile (themes)
@@ -135,6 +135,6 @@ modules:
 
   # ---------------------------------------------------------------------------
   # 9. Signing — cosign policy files so users can rebase via
-  #      ostree-image-signed:docker://ghcr.io/<you>/dot-os:latest
+  #      ostree-image-signed:docker://ghcr.io/ma7tar84/dot-os:latest
   # ---------------------------------------------------------------------------
   - type: signing

@@ -1,0 +1,50 @@
+# =============================================================================
+# DoT OS — BlueBuild GitHub Actions pipeline
+# -----------------------------------------------------------------------------
+# Rebuilds the image:
+#   * daily at 06:00 UTC (shortly after Universal Blue ships new Bazzite
+#     builds, so upstream updates are picked up automatically)
+#   * on every push that changes anything but docs
+#   * manually via "Run workflow"
+#
+# Required repository secret (Settings -> Secrets and variables -> Actions):
+#   SIGNING_SECRET  — cosign private key (PEM). Generate one with:
+#                       cosign generate-key-pair --key /tmp/key.pem
+#     and commit the PUBLIC half to the repo as cosign.pub.
+# =============================================================================
+name: bluebuild
+on:
+  schedule:
+    - cron:
+        "00 06 * * *" # build at 06:00 UTC every day
+  push:
+    paths-ignore: # don't rebuild if only documentation has changed
+      - "**.md"
+  pull_request:
+  workflow_dispatch: # allow manually triggering builds
+concurrency:
+  # only run one build at a time
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  bluebuild:
+    name: Build DoT OS
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        recipe:
+          - recipe.yml # published as ghcr.io/<owner>/dot-os
+    steps:
+      - name: Build DoT OS
+        uses: blue-build/github-action@v1.12
+        with:
+          recipe: ${{ matrix.recipe }}
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
+          maximize_build_space: true
