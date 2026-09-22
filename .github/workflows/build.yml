@@ -8,9 +8,23 @@
 #   * manually via "Run workflow"
 #
 # Required repository secret (Settings -> Secrets and variables -> Actions):
-#   SIGNING_SECRET  — cosign private key (PEM). Generate one with:
-#                       cosign generate-key-pair --key /tmp/key.pem
-#     and commit the PUBLIC half to the repo as cosign.pub.
+#   SIGNING_SECRET  — the cosign PRIVATE key as a valid PKCS#8 PEM
+#                     ("-----BEGIN PRIVATE KEY-----"). The public half must
+#                     be committed to the repo as cosign.pub.
+#
+#   Generate a pair (cosign CLI, preferred):
+#     cosign generate-key-pair --key /tmp/key.pem   # writes /tmp/key.pem.pub
+#     # SIGNING_SECRET = contents of /tmp/key.pem
+#     # cosign.pub     = contents of /tmp/key.pem.pub
+#
+#   ...or with plain openssl (no cosign needed), ECDSA P-256:
+#     openssl ecparam -genkey -name prime256v1 -noout -out ec.pem
+#     openssl pkcs8 -topk8 -nocrypt -in ec.pem -out key.pem      # -> SIGNING_SECRET
+#     openssl ec -in ec.pem -pubout -out cosign.pub              # -> commit
+#
+#   ⚠ The PEM must be complete and well-formed, or the build fails with
+#     "cosign public-key: invalid pem block". Verify the pair matches before
+#     pushing: `openssl pkey -in key.pem -pubout` must equal cosign.pub.
 # =============================================================================
 name: bluebuild
 on:
