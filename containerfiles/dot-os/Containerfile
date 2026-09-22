@@ -38,11 +38,15 @@ RUN set -euxo pipefail \
 # --- 2. WhiteSur icon theme (system-wide) ------------------------------------
 # install.sh as root defaults DEST_DIR to /usr/share/icons; without -t it
 # installs the default (blue, Big Sur style) icon set as "WhiteSur".
+# NOTE: install.sh already runs gtk-update-icon-cache for each theme dir it
+# installs (WhiteSur, WhiteSur-light, WhiteSur-dark). Do NOT add a
+# `gtk-update-icon-cache -f /usr/share/icons` call here — the icons *root* has
+# no index.theme, so the -f scan fails with "No theme index file." and kills
+# the build (exit 1).
 RUN set -euxo pipefail \
     && git clone --depth 1 https://github.com/vinceliuice/WhiteSur-icon-theme.git /tmp/whitesur-icon \
     && cd /tmp/whitesur-icon \
     && ./install.sh \
-    && gtk-update-icon-cache -f /usr/share/icons \
     && rm -rf /tmp/whitesur-icon
 
 # --- 3. GNOME Shell theme entrypoint ----------------------------------------
