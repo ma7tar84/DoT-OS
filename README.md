@@ -36,9 +36,14 @@ files/gschema-overrides/zz2-dot-os-dock.gschema.override
 
 ## Building
 
-Repository: <https://github.com/ma7tar84/dot-os>
+Repository: <https://github.com/ma7tar84/DoT-OS>
 
-1. Push this directory to `ma7tar84/dot-os` (or just commit your changes if
+> **Naming:** the *GitHub repo* is `ma7tar84/DoT-OS`, but the *container
+> image* name comes from the recipe's `name: dot-os` field, so the published
+> package is **`ghcr.io/ma7tar84/dot-os`** (lowercase). Don't confuse the two —
+> install/rebase commands below all use the lowercase registry name.
+
+1. Push this directory to `ma7tar84/DoT-OS` (or just commit your changes if
    it's already there).
 2. Generate a cosign key pair and store the private key in the
    `SIGNING_SECRET` repository secret; commit `cosign.pub`.
@@ -83,11 +88,12 @@ DoT OS is a bootc image, so install it **into** a VM:
    rpm-ostree upgrade            # pulls new Bazzite+DoT builds
    ```
 
-   > **Note:** anonymous pulls from GHCR only work for **public** packages.
-   > `github.com/ma7tar84/dot-os` is currently **private**, so in the VM run
+   > **Note:** anonymous GHCR pulls only work for **public** packages. This
+   > project is built from the **private** repo `ma7tar84/DoT-OS`, so the
+   > package `ghcr.io/ma7tar84/dot-os` is private — in the VM run
    > `podman login ghcr.io` (GitHub username + a fine-grained PAT with
-   > "Packages: read" on `dot-os`) before the rebase/switch. Alternatively,
-   > make the repo public — then no login is needed.
+   > "Packages: read" on the `dot-os` package) before the rebase/switch.
+   > Alternatively, make the repo **public** — then no login is needed.
 
 ## How each requirement is satisfied
 

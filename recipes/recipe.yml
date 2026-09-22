@@ -9,7 +9,8 @@
 #   * Window controls (minimize/maximize/close) on the TOP-LEFT
 #
 # Upstream: ghcr.io/ublue-os/bazzite-gnome:stable  (auto-tracks new releases)
-# Publish:  ghcr.io/ma7tar84/dot-os  (repo github.com/ma7tar84/dot-os)
+# Publish:  ghcr.io/ma7tar84/dot-os  (image name = recipe `name:`; repo is
+#          github.com/ma7tar84/DoT-OS)
 #
 # Module order is deliberate and must be preserved:
 #   fonts -> gnome-extensions -> containerfile (themes)
