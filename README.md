@@ -40,7 +40,7 @@ files/gschema-overrides/zz2-dot-os-dock.gschema.override
 2. Generate a cosign key pair and store the private key in the
    `SIGNING_SECRET` repository secret; commit `cosign.pub`.
 3. Let the workflow run (or trigger it manually). The image is published to
-   `ghcr.io/<your-username>/dot-os:latest`.
+   `ghcr.io/https://github.com/ma7tar84/dot-os:latest`.
 
 ## Installing / rebasing
 
@@ -49,11 +49,11 @@ existing Bazzite/Fedora Atomic system:
 
 ```bash
 # 1. rebase to the unsigned image to install signing keys/policies
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/<your-username>/dot-os:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/https://github.com/ma7tar84/dot-os:latest
 systemctl reboot
 
 # 2. rebase to the signed image
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/<your-username>/dot-os:latest
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/https://github.com/ma7tar84/dot-os:latest
 systemctl reboot
 ```
 
